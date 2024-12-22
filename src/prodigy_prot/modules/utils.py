@@ -11,7 +11,7 @@ Assorted utility functions.
 
 import math
 import os
-
+from collections import defaultdict
 
 def check_path(path):
     """

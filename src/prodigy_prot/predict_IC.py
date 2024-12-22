@@ -31,11 +31,11 @@ except ImportError as e:
     )
     raise ImportError(e)
 
-from prodigy_prot.modules import aa_properties
-from prodigy_prot.modules.freesasa_tools import execute_freesasa_api
-from prodigy_prot.modules.models import IC_NIS
-from prodigy_prot.modules.parsers import parse_structure
-from prodigy_prot.modules.utils import check_path, dg_to_kd
+from modules import aa_properties
+from modules.freesasa_tools import execute_freesasa_api
+from modules.models import IC_NIS
+from modules.parsers import parse_structure
+from modules.utils import check_path, dg_to_kd
 
 
 def calculate_ic(struct, d_cutoff=5.5, selection=None):
@@ -130,8 +130,12 @@ class Prodigy:
         self.bins = {}
         self.nis_a = 0
         self.nis_c = 0
+        self.nis_p = 0
         self.ba_val = 0
         self.kd_val = 0
+        self.total_asa = 0
+        self.total_bsa = 0
+
 
     def predict(self, temp=None, distance_cutoff=5.5, acc_threshold=0.05):
         if temp is not None:
@@ -158,10 +162,7 @@ class Prodigy:
 
         # SASA
         _, cmplx_sasa = execute_freesasa_api(self.structure)
-        self.nis_a, self.nis_c, _ = analyse_nis(
-            cmplx_sasa, acc_threshold=acc_threshold
-        )
-
+        self.nis_a, self.nis_c, self.nis_p = analyse_nis( cmplx_sasa, acc_threshold=acc_threshold)
         # Affinity Calculation
         self.ba_val = IC_NIS(
             self.bins["CC"],
@@ -174,6 +175,7 @@ class Prodigy:
         self.kd_val = dg_to_kd(self.ba_val, self.temp)
 
     def as_dict(self):
+
         return_dict = {
             "structure": self.structure.id,
             "selection": self.selection,
@@ -181,8 +183,11 @@ class Prodigy:
             "ICs": len(self.ic_network),
             "nis_a": self.nis_a,
             "nis_c": self.nis_c,
+            "nis_p": self.nis_p,
             "ba_val": self.ba_val,
             "kd_val": self.kd_val,
+            "total_asa": self.total_asa,
+            "total_bsa": self.total_bsa,
         }
         return_dict.update(self.bins)
         return return_dict

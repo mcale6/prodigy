@@ -31,7 +31,6 @@ import contextlib
 
 from .aa_properties import rel_asa
 
-
 @contextlib.contextmanager
 def stdchannel_redirected(stdchannel, dest_filename):
     """
@@ -238,3 +237,45 @@ def execute_freesasa_api(structure):
         (res_uid, asa / _rsa[res_uid[1]]) for res_uid, asa in rsa_data.items()
     )
     return asa_data, rsa_data
+
+def execute_freesasa_api2(structure, save_sasa_results=False):
+    """
+    Compute SASA using freesasa and return absolute and relative SASA differences.
+
+    Args:
+        structure: Input PDB structure.
+
+    Returns:
+        asa_data: Dictionary containing per-atom SASA values.
+        rsa_data: Dictionary containing relative SASA values per residue.
+        abs_diff_data: Dictionary containing absolute SASA differences per residue.
+    """
+    from freesasa import Classifier, calc, structureFromBioPDB
+
+    asa_data, rsa_data, abs_diff_data = {}, {}, {}
+    _rsa = rel_asa["total"]  # This likely contains the total reference ASA for normalization.
+
+    config_path = "./src/prodigy_prot/naccess.config"
+    #print(config_path)
+    classifier = Classifier(config_path)
+
+    struct = structureFromBioPDB(structure, classifier)
+    result = calc(struct)
+
+    # Iterate over all atoms to get SASA and residue information.
+    for idx in range(struct.nAtoms()):
+        atname = struct.atomName(idx)
+        resname = struct.residueName(idx)
+        resid = struct.residueNumber(idx)
+        chain = struct.chainLabel(idx)
+        at_uid = (chain, resname, resid, atname)
+        res_uid = (chain, resname, resid)
+
+        asa = result.atomArea(idx)
+        asa_data[at_uid] = asa # per atom
+        rsa_data[res_uid] = rsa_data.get(res_uid, 0) + asa # per residue
+        abs_diff_data[res_uid] = rsa_data.get(res_uid, 0) + asa # per residue
+
+    rsa_data.update((res_uid, asa / _rsa[res_uid[1]]) for res_uid, asa in rsa_data.items()) # per residue 
+    abs_diff_data.update((res_uid, abs(asa - _rsa[res_uid[1]])) for res_uid, asa in abs_diff_data.items()) # per residue 
+    return asa_data, rsa_data, abs_diff_data
