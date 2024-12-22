@@ -39,12 +39,7 @@ class CustomProdigy(Prodigy):
         self.bins = analyse_contacts(self.ic_network)
         # SASA
         self.asa_data, self.rsa_data, self.abs_diff_data = execute_freesasa_api2(self.structure)
-
-        chain_sums_res = lambda d: {'total': sum(d.values()), 'per_chain': {chain: sum(v for (c, _, _,), v in d.items() if c == chain) for chain in {k[0] for k in d.keys()}}}
-        chain_sums_atm= lambda d: {'total': sum(d.values()), 'per_chain': {chain: sum(v for (c, _, _, _), v in d.items() if c == chain) for chain in {k[0] for k in d.keys()}}}
-
-        print(chain_sums_res(self.rsa_data))
-        print(chain_sums_res(self.abs_diff_data))
+        chain_sums_atm = lambda d: {'total': sum(d.values()), 'per_chain': {chain: sum(v for (c, _, _, _), v in d.items() if c == chain) for chain in {k[0] for k in d.keys()}}}
         print(chain_sums_atm(self.asa_data))
         #print(self.asa_data)
 
@@ -66,13 +61,13 @@ def predict_binding_affinity(
     selection=None,
     temperature=25.0,
     distance_cutoff=5.5,
-    acc_threshold=0.05,
+    acc_threshold=0.0,
     save_results=False,
     output_dir=None,
     quiet=False):
     """ Predict binding affinity using the custom PRODIGY method in python.
     care the relative bsa is sometiems higher than 1. in the codebase of prodigy
-    Temperature in Celsius for Kd predictio, Distance cutoff to calculate ICs, Accessibility threshold for BSA analysis
+    Temperature in Celsius for Kd predictio, Distance cutoff to calculate ICs, Accessibility threshold from rel. SASA analysis
     """
     # Check and parse structure
     structure, n_chains, n_res = parse_structure(struct_path)
@@ -101,7 +96,7 @@ def predict_binding_affinity(
         with open(output_path_csv, "w") as f:
             f.write(asa_csv_lines)
     
-    return results
+    return results, output_path_json, output_path_csv
 
 
 def main():
@@ -135,7 +130,7 @@ def main():
         "--acc_threshold", 
         type=float, 
         default=0.05, 
-        help="Accessibility threshold for BSA analysis (default: 0.05)."
+        help="Accessibility threshold from rel. SASA (default: 0.05)."
     )
     parser.add_argument(
         "--save_results",

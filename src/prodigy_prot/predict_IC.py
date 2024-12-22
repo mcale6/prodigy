@@ -133,9 +133,6 @@ class Prodigy:
         self.nis_p = 0
         self.ba_val = 0
         self.kd_val = 0
-        self.total_asa = 0
-        self.total_bsa = 0
-
 
     def predict(self, temp=None, distance_cutoff=5.5, acc_threshold=0.05):
         if temp is not None:
@@ -186,8 +183,6 @@ class Prodigy:
             "nis_p": self.nis_p,
             "ba_val": self.ba_val,
             "kd_val": self.kd_val,
-            "total_asa": self.total_asa,
-            "total_bsa": self.total_bsa,
         }
         return_dict.update(self.bins)
         return return_dict

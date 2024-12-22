@@ -1,9 +1,8 @@
 # Custom changes
 
-- in freesasa_tools.py replaced the os.dup with simpler api call
 - predict_IC_custom.py
-  - added more in result_dict
-  - easier output handling
+  - in freesasa_tools.py replaced the os.dup with simpler api call
+  - easier output handling (saved asa results and ba results)
 
 # PRODIGY / Binding Affinity Prediction 
 
