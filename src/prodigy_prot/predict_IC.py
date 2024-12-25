@@ -104,16 +104,15 @@ def analyse_nis(sasa_dict, acc_threshold=0.05):
         return {"A": 0, "C": 1, "P": 2}.get(x)
 
     count = [0, 0, 0]
-
     for res, rsa in sasa_dict.items():
         chain, resn, resi = res
         if rsa >= acc_threshold:
             aa_character = _data[resn]
             aa_index = _char_to_index(aa_character)
             count[aa_index] += 1
-
+    print(count)
     percentages = [100 * x / sum(count) for x in count]
-    # print('[+] No. of buried interface residues: {0}'.format(sum(count)))
+    print('[+] No. of buried interface residues: {0}'.format(sum(count)))
     return percentages
 
 

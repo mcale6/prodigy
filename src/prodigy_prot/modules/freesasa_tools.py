@@ -238,7 +238,7 @@ def execute_freesasa_api(structure):
     )
     return asa_data, rsa_data
 
-def execute_freesasa_api2(structure, save_sasa_results=False):
+def execute_freesasa_api2(structure):
     """
     Compute SASA using freesasa and return absolute and relative SASA differences.
 
